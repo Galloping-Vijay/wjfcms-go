@@ -13,7 +13,7 @@
 | `resources/views/layouts/home.blade.php` | `server/templates/seo_*.tmpl` | done | 前台已改 Gin 服务端渲染，SEO meta、站点验证、统计代码、谷歌广告、页脚版权/备案/举报邮箱已补 |
 | `page-agent` 集成 | `server/templates/seo_parts.tmpl` | done | Gin HTML 直出页面已接入，后续按需要改为可配置开关 |
 | `layouts/home/toolbar.blade.php` | `server/templates/seo_parts.tmpl` | done | HTML+JS 右侧工具条、微信、打赏、返回顶部已完成 |
-| 侧栏组件合集 | `server/templates/seo_parts.tmpl` | done | 历史上的今天、公众号、广告位、申请友链表单已完成 |
+| 侧栏组件合集 | `server/templates/seo_parts.tmpl` | done | 公众号、广告位、申请友链表单已完成；历史上的今天已移除 |
 
 ## 前台页面
 

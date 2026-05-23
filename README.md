@@ -259,24 +259,13 @@ server {
         access_log off;
     }
 
-    location = /ads.txt {
+    location ~ ^/(favicon\.ico|ads\.txt|bdunion\.txt|google.*\.html)$ {
         root /www/wwwroot/wjfcm-go/public;
         access_log off;
     }
 
-    location = /bdunion.txt {
-        root /www/wwwroot/wjfcm-go/public;
-        access_log off;
-    }
-
-    location = /favicon.ico {
-        root /www/wwwroot/wjfcm-go/public;
-        access_log off;
-    }
-
-    location ~ ^/google.*\.html$ {
-        root /www/wwwroot/wjfcm-go/public;
-        access_log off;
+    location /admin/ {
+        try_files $uri $uri/ /index.html;
     }
 
     location / {

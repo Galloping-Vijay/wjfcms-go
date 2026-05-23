@@ -118,7 +118,6 @@ func New(cfg config.Config, db *gorm.DB) *gin.Engine {
 	home.GET("/friend-links", content.FriendLinks)
 	home.POST("/friend-links", content.ApplyFriendLink)
 	home.GET("/chats", content.Chats)
-	home.GET("/history/today", content.HistoryToday)
 	home.GET("/system-configs", content.SystemConfigs)
 	home.GET("/comments", comments.PublicIndex)
 	home.GET("/auth/captcha", homeAuth.Captcha)

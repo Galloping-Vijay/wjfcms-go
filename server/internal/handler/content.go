@@ -121,27 +121,6 @@ func (h *ContentHandler) SubmitBaiduLinks(c *gin.Context) {
 	response.OK(c, "百度主动推送完成", result)
 }
 
-func (h *ContentHandler) HistoryToday(c *gin.Context) {
-	now := time.Now()
-	apiURL := "http://www.jiahengfei.cn:33550/port/history?dispose=detail&key=jiahengfei&month=" +
-		now.Format("01") + "&day=" + now.Format("02")
-
-	client := http.Client{Timeout: 8 * time.Second}
-	resp, err := client.Get(apiURL)
-	if err != nil {
-		response.Error(c, http.StatusBadGateway, 1, "历史上的今天接口暂不可用")
-		return
-	}
-	defer resp.Body.Close()
-
-	var payload any
-	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
-		response.Error(c, http.StatusBadGateway, 1, "历史上的今天响应异常")
-		return
-	}
-	response.OK(c, "获取成功", payload)
-}
-
 func (h *ContentHandler) systemConfigValue(key string) string {
 	var item model.SystemConfig
 	if err := h.db.Where("`key` = ? AND status = ?", key, 1).First(&item).Error; err != nil {
