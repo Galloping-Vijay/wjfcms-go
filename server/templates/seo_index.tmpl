@@ -1,0 +1,28 @@
+{{ template "seo_layout_start" . }}
+<section class="hero">
+  <h1>{{ .SiteName }}</h1>
+  <p>{{ .Description }}</p>
+</section>
+{{ if .TopArticles }}
+<section class="featured-section">
+  <div class="section-title">
+    <h2>置顶推荐</h2>
+    <span>站长精选内容</span>
+  </div>
+  <div class="featured-grid">
+    {{ range .TopArticles }}
+      <article class="featured-card">
+        <a class="featured-cover" href="/article/{{ .ID }}"><img src="{{ .Cover }}" alt="{{ .Title }}"></a>
+        <div class="featured-body">
+          <span class="pin-badge">置顶</span>
+          <h3><a href="/article/{{ .ID }}">{{ .Title }}</a></h3>
+          <p>{{ .Description }}</p>
+          <div class="meta"><span>{{ .Author }}</span><span>{{ .CreatedAt.Format "2006-01-02" }}</span><span>浏览 {{ .Click }}</span></div>
+        </div>
+      </article>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
+{{ template "seo_article_list" . }}
+{{ template "seo_layout_end" . }}

@@ -1,0 +1,10 @@
+{{ template "seo_layout_start" . }}
+<section class="hero">
+  <h1>{{ .Message }}</h1>
+  <p>你访问的页面暂时无法显示，可以返回首页继续浏览。</p>
+</section>
+<section class="empty">
+  <strong>{{ .Message }}</strong>
+  <p><a href="/">返回首页</a></p>
+</section>
+{{ template "seo_layout_end" . }}

@@ -1,0 +1,15 @@
+{{ template "seo_layout_start" . }}
+<section class="hero compact">
+  {{ if .Category }}
+    <h1>{{ .Category.Name }}</h1>
+    <p>{{ .Category.Description }}</p>
+  {{ else if .Tag }}
+    <h1>{{ .Tag.Name }}</h1>
+    <p>{{ .Description }}</p>
+  {{ else }}
+    <h1>搜索：{{ .Query }}</h1>
+    <p>{{ .Description }}</p>
+  {{ end }}
+</section>
+{{ template "seo_article_list" . }}
+{{ template "seo_layout_end" . }}

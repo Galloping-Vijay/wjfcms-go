@@ -1,0 +1,25 @@
+{{ template "seo_layout_start" . }}
+<section class="hero compact">
+  <h1>文章归档</h1>
+  <p>按分类整理本站已发布的文章。</p>
+</section>
+<section class="archive">
+  {{ range .Archive }}
+    <div class="archive-group">
+      <h2><a href="/category/{{ .ID }}">{{ .Name }}</a></h2>
+      <ul>
+        {{ range .Articles }}
+          <li>
+            <a href="/article/{{ .ID }}">{{ .Title }}</a>
+            <span>{{ .CreatedAt.Format "2006-01-02" }} · 浏览 {{ .Click }}</span>
+          </li>
+        {{ else }}
+          <li class="muted">暂无文章</li>
+        {{ end }}
+      </ul>
+    </div>
+  {{ else }}
+    <div class="empty">暂无归档</div>
+  {{ end }}
+</section>
+{{ template "seo_layout_end" . }}

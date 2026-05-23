@@ -1,0 +1,23 @@
+{{ template "seo_layout_start" . }}
+<section class="hero compact">
+  <h1>有些话</h1>
+  <p>一些碎片想法和站点动态。</p>
+</section>
+<section class="chat-list">
+  {{ range .Chats }}
+    <article class="chat-item">
+      <time>{{ .CreatedAt.Format "2006-01-02 15:04" }}</time>
+      <p>{{ .Content }}</p>
+    </article>
+  {{ else }}
+    <div class="empty">暂无内容</div>
+  {{ end }}
+</section>
+{{ if or .HasPrev .HasNext }}
+  <nav class="pager">
+    {{ if .HasPrev }}<a href="{{ .PrevURL }}">上一页</a>{{ end }}
+    {{ range .Pages }}{{ if .Active }}<span class="active">{{ .Number }}</span>{{ else }}<a href="{{ .URL }}">{{ .Number }}</a>{{ end }}{{ end }}
+    {{ if .HasNext }}<a href="{{ .NextURL }}">下一页</a>{{ end }}
+  </nav>
+{{ end }}
+{{ template "seo_layout_end" . }}

@@ -1,0 +1,52 @@
+﻿{{ template "seo_layout_start" . }}
+<section class="auth-card profile-card">
+  <h1>用户中心</h1>
+  <form id="profile-form" class="auth-form" hidden>
+    <div class="profile-avatar"><img id="avatar-preview" src="/images/config/avatar.jpg" alt="头像"><label><span>上传头像</span><input id="avatar-file" type="file" accept="image/*"></label></div>
+    <label>邮箱<input name="email" type="email"></label>
+    <label>邮箱验证码<span class="inline-code"><input name="email_code" inputmode="numeric" autocomplete="one-time-code" placeholder="修改邮箱时填写"><button type="button" id="send-profile-code">发送验证码</button></span></label>
+    <label>昵称<input name="name" required></label>
+    <label>性别<select name="sex"><option value="-1">保密</option><option value="0">男</option><option value="1">女</option></select></label>
+    <label>手机<input name="tel"></label>
+    <label>城市<input name="city"></label>
+    <label>简介<textarea name="intro" rows="4"></textarea></label>
+    <input name="avatar" type="hidden">
+    <div class="form-row-actions"><button type="submit">保存资料</button><button type="button" class="secondary" id="logout">退出登录</button></div>
+    <p class="form-message" id="form-message"></p>
+  </form>
+  <div class="empty" id="profile-empty">正在读取资料...</div>
+</section>
+<script>
+(function(){
+  var form=document.getElementById('profile-form'),empty=document.getElementById('profile-empty'),msg=document.getElementById('form-message'),preview=document.getElementById('avatar-preview'),file=document.getElementById('avatar-file'),send=document.getElementById('send-profile-code'),originEmail='',seconds=0,timer=null;
+  if(!window.WJFCMGOAuth.token()){location.href='/login?redirect=/user';return;}
+  function fill(user){['email','name','tel','city','intro','avatar'].forEach(function(k){if(form[k])form[k].value=user[k]||'';});originEmail=(user.email||'').toLowerCase();form.sex.value=user.sex==null?-1:user.sex;preview.src=user.avatar||'/images/config/avatar.jpg';empty.hidden=true;form.hidden=false;}
+  function tick(){seconds-=1;send.textContent=seconds>0?seconds+'s':'发送验证码';send.disabled=seconds>0;if(seconds<=0&&timer)clearInterval(timer);}
+  window.WJFCMGOAuth.get('/api/home/profile').then(function(body){fill(body.data);localStorage.setItem('home_user',JSON.stringify(body.data));}).catch(function(){localStorage.removeItem('home_token');location.href='/login?redirect=/user';});
+  file.addEventListener('change',function(){
+    var selected=file.files&&file.files[0];if(!selected)return;
+    var data=new FormData();data.append('file',selected);msg.textContent='上传中...';
+    fetch('/api/home/upload/image',{method:'POST',headers:{Authorization:'Bearer '+window.WJFCMGOAuth.token()},body:data}).then(function(res){return res.json();}).then(function(body){
+      if(body.code!==0)throw new Error(body.msg||'上传失败');
+      form.avatar.value=body.data.url;preview.src=body.data.url;msg.textContent='头像已上传，记得保存资料';
+    }).catch(function(err){msg.textContent=err.message;}).finally(function(){file.value='';});
+  });
+  form.addEventListener('submit',function(e){
+    e.preventDefault();msg.textContent='';
+    var data=window.WJFCMGOAuth.formJSON(form);data.sex=Number(data.sex);
+    if((data.email||'').toLowerCase()===originEmail)delete data.email_code;
+    window.WJFCMGOAuth.put('/api/home/profile',data).then(function(body){localStorage.setItem('home_user',JSON.stringify(body.data));msg.textContent='保存成功';}).catch(function(err){msg.textContent=err.message;});
+  });
+  send.addEventListener('click',function(){
+    var email=form.email.value.trim().toLowerCase();
+    if(!email){msg.textContent='请先填写邮箱';return;}
+    if(email===originEmail){msg.textContent='邮箱未变化，无需验证码';return;}
+    window.WJFCMGOAuth.post('/api/home/auth/email-code',{email:email,purpose:'profile_email'}).then(function(body){
+      msg.textContent=body.data&&body.data.debug_code?'开发验证码：'+body.data.debug_code:'验证码已发送，请查看邮箱';
+      seconds=60;send.disabled=true;send.textContent='60s';timer=setInterval(tick,1000);
+    }).catch(function(err){msg.textContent=err.message;});
+  });
+  document.getElementById('logout').addEventListener('click',function(){localStorage.removeItem('home_token');localStorage.removeItem('home_user');location.href='/';});
+})();
+</script>
+{{ template "seo_layout_end" . }}

@@ -1,0 +1,231 @@
+{{ template "seo_layout_start" . }}
+<article class="article-detail">
+  <h1>{{ .Article.Title }}</h1>
+  <div class="meta">
+    <span>{{ if .Article.Author }}{{ .Article.Author }}{{ else }}{{ .SiteName }}{{ end }}</span>
+    <span>{{ .Article.CreatedAt.Format "2006-01-02 15:04" }}</span>
+    <span>浏览 {{ .Article.Click }}</span>
+  </div>
+  {{ if .Article.Keywords }}
+    <div class="tags">
+      {{ range splitTags .Article.Keywords }}<span>{{ . }}</span>{{ end }}
+    </div>
+  {{ end }}
+  {{ if .Article.Description }}
+    <section class="summary"><strong>简介</strong><p>{{ .Article.Description }}</p></section>
+  {{ end }}
+  <div class="content">{{ safeHTML .Article.Content }}</div>
+  <section class="copyright">
+    <strong>转载说明</strong>
+    <p>本文链接：<a href="{{ .Canonical }}">{{ .Canonical }}</a></p>
+    <p>转载请注明来源，感谢尊重原创内容。</p>
+  </section>
+  <nav class="article-neighbors" aria-label="上一篇和下一篇">
+    <div>
+      <span>上一篇</span>
+      {{ if .PrevArticle }}<a href="/article/{{ .PrevArticle.ID }}">{{ .PrevArticle.Title }}</a>{{ else }}<em>已经是第一篇了</em>{{ end }}
+    </div>
+    <div>
+      <span>下一篇</span>
+      {{ if .NextArticle }}<a href="/article/{{ .NextArticle.ID }}">{{ .NextArticle.Title }}</a>{{ else }}<em>已经是最后一篇了</em>{{ end }}
+    </div>
+  </nav>
+  <section class="comment-box" id="comments" data-article-id="{{ .Article.ID }}">
+    <div class="comment-head">
+      <div>
+        <h2>留言评论</h2>
+        <p>支持表情、回复和点赞。评论需要先登录。</p>
+      </div>
+      <a class="comment-login" href="/login">登录</a>
+    </div>
+    <form class="comment-form" id="comment-form">
+      <input type="hidden" name="pid" value="0">
+      <input type="hidden" name="origin_id" value="0">
+      <div class="reply-tip" id="reply-tip" hidden></div>
+      <textarea name="content" rows="4" maxlength="1000" placeholder="写下你的想法，支持表情 😊"></textarea>
+      <div class="comment-tools">
+        <button type="button" class="emoji-toggle" id="emoji-toggle">表情</button>
+      </div>
+      <div class="emoji-row emoji-panel" id="emoji-row" hidden>
+        <button type="button">😀</button><button type="button">😂</button><button type="button">👍</button><button type="button">❤️</button><button type="button">🎉</button><button type="button">🤔</button><button type="button">😎</button><button type="button">😭</button>
+      </div>
+      <div class="comment-actions">
+        <button type="button" class="secondary" id="cancel-reply" hidden>取消回复</button>
+        <button type="submit">提交评论</button>
+      </div>
+      <p class="comment-message" id="comment-message"></p>
+    </form>
+    <div class="comment-list" id="comment-list"></div>
+    <button class="load-more" id="comment-more" type="button" hidden>加载更多</button>
+  </section>
+</article>
+<script>
+(function () {
+  var box = document.getElementById('comments');
+  if (!box) return;
+  var articleId = Number(box.dataset.articleId);
+  var list = document.getElementById('comment-list');
+  var more = document.getElementById('comment-more');
+  var form = document.getElementById('comment-form');
+  var textarea = form.querySelector('textarea[name="content"]');
+  var message = document.getElementById('comment-message');
+  var replyTip = document.getElementById('reply-tip');
+  var cancelReply = document.getElementById('cancel-reply');
+  var emojiToggle = document.getElementById('emoji-toggle');
+  var emojiRow = document.getElementById('emoji-row');
+  var page = 1;
+  var limit = 8;
+  var total = 0;
+  var comments = [];
+
+  function token() {
+    return localStorage.getItem('home_token') || '';
+  }
+
+  function escapeHTML(value) {
+    return String(value || '').replace(/[&<>"']/g, function (char) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+    });
+  }
+
+  function request(url, options) {
+    options = options || {};
+    options.headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+    if (token()) options.headers.Authorization = 'Bearer ' + token();
+    return fetch(url, options).then(function (res) {
+      return res.json().then(function (body) {
+        if (!res.ok || body.code !== 0) throw new Error(body.msg || '操作失败');
+        return body;
+      });
+    });
+  }
+
+  function renderComment(item, child) {
+    var children = (item.child || []).map(function (sub) { return renderComment(sub, true); }).join('');
+    var replyContext = child && item.reply_to_username ? '<span class="reply-context">回复 @' + escapeHTML(item.reply_to_username) + (item.reply_to_content ? '：' + escapeHTML(item.reply_to_content).slice(0, 32) : '') + '</span>' : '';
+    return '<article class="comment-item' + (child ? ' child' : '') + '" data-id="' + item.id + '" data-origin="' + (item.origin_id || item.id) + '" data-user="' + escapeHTML(item.user_name) + '">' +
+      '<img src="' + escapeHTML(item.avatar || '/images/config/avatar.jpg') + '" alt="' + escapeHTML(item.user_name || '用户') + '">' +
+      '<div class="comment-main">' +
+        '<div class="comment-meta"><strong>' + escapeHTML(item.user_name || '用户') + '</strong><span>' + escapeHTML(item.created_at || '') + '</span></div>' +
+        replyContext +
+        '<p>' + escapeHTML(item.content) + '</p>' +
+        '<div class="comment-tools">' +
+          '<button type="button" data-action="reply">回复</button>' +
+          '<button type="button" data-action="zan">赞 ' + (item.zan || 0) + '</button>' +
+          '<button type="button" data-action="cai">踩 ' + (item.cai || 0) + '</button>' +
+        '</div>' +
+        (children ? '<div class="comment-children">' + children + '</div>' : '') +
+      '</div>' +
+    '</article>';
+  }
+
+  function render() {
+    if (!comments.length) {
+      list.innerHTML = '<div class="empty">还没有评论，来占个位置吧。</div>';
+    } else {
+      list.innerHTML = comments.map(function (item) { return renderComment(item, false); }).join('');
+    }
+    more.hidden = comments.length >= total;
+  }
+
+  function load(reset) {
+    if (reset) {
+      page = 1;
+      comments = [];
+    }
+    return request('/api/home/comments?article_id=' + articleId + '&page=' + page + '&limit=' + limit, { headers: {} })
+      .then(function (body) {
+        total = body.count || 0;
+        comments = comments.concat(body.data || []);
+        render();
+      }).catch(function (err) {
+        list.innerHTML = '<div class="empty">' + escapeHTML(err.message) + '</div>';
+      });
+  }
+
+  function setReply(target) {
+    form.pid.value = target.dataset.id;
+    form.origin_id.value = target.dataset.origin || target.dataset.id;
+    replyTip.hidden = false;
+    replyTip.textContent = '正在回复：' + (target.dataset.user || '用户');
+    cancelReply.hidden = false;
+    textarea.focus();
+  }
+
+  function clearReply() {
+    form.pid.value = '0';
+    form.origin_id.value = '0';
+    replyTip.hidden = true;
+    replyTip.textContent = '';
+    cancelReply.hidden = true;
+  }
+
+  emojiToggle.addEventListener('click', function () {
+    emojiRow.hidden = !emojiRow.hidden;
+    emojiToggle.classList.toggle('active', !emojiRow.hidden);
+  });
+
+  emojiRow.addEventListener('click', function (event) {
+    if (event.target.tagName !== 'BUTTON') return;
+    textarea.value += event.target.textContent;
+    message.textContent = '已插入表情';
+    emojiRow.hidden = true;
+    emojiToggle.classList.remove('active');
+    textarea.focus();
+  });
+
+  list.addEventListener('click', function (event) {
+    var action = event.target.dataset.action;
+    if (!action) return;
+    var item = event.target.closest('.comment-item');
+    if (action === 'reply') {
+      setReply(item);
+      return;
+    }
+    request('/api/home/comments/' + item.dataset.id + '/action', {
+      method: 'POST',
+      body: JSON.stringify({ action_type: action })
+    }).then(function () { return load(true); }).catch(function (err) {
+      message.textContent = err.message;
+    });
+  });
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    message.textContent = '';
+    if (!token()) {
+      message.textContent = '请先登录后再评论';
+      return;
+    }
+    var content = textarea.value.trim();
+    if (!content) {
+      message.textContent = '请填写评论内容';
+      return;
+    }
+    request('/api/home/comments', {
+      method: 'POST',
+      body: JSON.stringify({
+        article_id: articleId,
+        pid: Number(form.pid.value || 0),
+        origin_id: Number(form.origin_id.value || 0),
+        content: content
+      })
+    }).then(function () {
+      textarea.value = '';
+      clearReply();
+      message.textContent = '评论成功';
+      return load(true);
+    }).catch(function (err) {
+      message.textContent = err.message;
+    });
+  });
+
+  cancelReply.addEventListener('click', clearReply);
+  more.addEventListener('click', function () {
+    page += 1;
+    load(false);
+  });
+  load(true);
+})();
+</script>
+{{ template "seo_layout_end" . }}

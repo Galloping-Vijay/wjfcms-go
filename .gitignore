@@ -1,0 +1,29 @@
+# Environment
+.env
+*.local
+server/.env
+web/.env
+
+# Go
+server/tmp/
+server/bin/
+server/*.exe
+server/*.log
+*.test
+coverage.out
+
+# Node / Vite
+web/node_modules/
+web/dist/
+web/.vite/
+
+# Runtime uploads and logs
+public/uploads/*
+!public/uploads/.gitkeep
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
