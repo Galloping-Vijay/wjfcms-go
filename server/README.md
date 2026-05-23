@@ -22,6 +22,34 @@ go run ./cmd/api -f /www/wwwroot/wjfcm-go/server/.env.prod
 http://localhost:8080
 ```
 
+## 基础配置说明
+
+```env
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_CONSOLE_COLOR=true
+LOG_CHANNEL=stack
+```
+
+这些配置的作用：
+
+- `APP_ENV`：运行环境。未显式设置 `APP_DEBUG` 时，`production` 或 `prod` 会默认关闭 debug，并让 Gin 使用 release 模式。
+- `APP_KEY`：应用密钥。安装向导会自动生成；当 `JWT_SECRET` 未配置或仍为 `change-me` 时，会作为 JWT 签名密钥兜底。
+- `APP_DEBUG`：调试开关。控制 Gin 模式和部分调试输出，例如开发环境邮件验证码接口会返回 `debug_code`。
+- `APP_CONSOLE_COLOR`：控制 Gin 控制台日志是否使用彩色输出。
+- `LOG_CHANNEL`：服务日志输出位置，影响 Gin 请求日志、标准 `log`、GORM SQL 日志。
+
+`LOG_CHANNEL` 支持：
+
+```text
+stack/stdout/console  输出到控制台
+stderr                输出到标准错误
+single/file           写入 storage/logs/wjfcm-go.log
+daily                 写入 storage/logs/wjfcm-go-YYYY-MM-DD.log
+null/discard/none     丢弃日志
+```
+
 新站点初始化安装：
 
 ```text

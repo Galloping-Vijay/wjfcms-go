@@ -162,13 +162,22 @@ type OAuthProviderConfig struct {
 
 func Load(files ...string) Config {
 	loadEnv(files...)
+	appEnv := env("APP_ENV", "local")
+	appKey := env("APP_KEY", "")
+	jwtSecret := env("JWT_SECRET", "")
+	if jwtSecret == "" || jwtSecret == "change-me" {
+		jwtSecret = appKey
+	}
+	if jwtSecret == "" {
+		jwtSecret = "change-me"
+	}
 
 	return Config{
 		App: AppConfig{
 			Name:         env("APP_NAME", "wjfcm-go"),
-			Env:          env("APP_ENV", "local"),
-			Key:          env("APP_KEY", ""),
-			Debug:        envBool("APP_DEBUG", true),
+			Env:          appEnv,
+			Key:          appKey,
+			Debug:        envBool("APP_DEBUG", !isProductionEnv(appEnv)),
 			Port:         env("APP_PORT", "8080"),
 			URL:          env("APP_URL", "http://localhost:8080"),
 			ConsoleColor: envBool("APP_CONSOLE_COLOR", true),
@@ -190,7 +199,7 @@ func Load(files ...string) Config {
 			SlowThresholdMS: envInt("DB_SLOW_THRESHOLD_MS", 200),
 		},
 		JWT: JWTConfig{
-			Secret:                env("JWT_SECRET", "change-me"),
+			Secret:                jwtSecret,
 			ExpiresMinutes:        envInt("JWT_EXPIRES_MINUTES", 120),
 			RefreshExpiresMinutes: envInt("JWT_REFRESH_EXPIRES_MINUTES", 10080),
 		},
@@ -283,6 +292,15 @@ func Load(files ...string) Config {
 			},
 		},
 	}
+}
+
+func (c AppConfig) IsProduction() bool {
+	return isProductionEnv(c.Env)
+}
+
+func isProductionEnv(value string) bool {
+	value = strings.ToLower(strings.TrimSpace(value))
+	return value == "production" || value == "prod"
 }
 
 func loadEnv(files ...string) {

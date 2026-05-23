@@ -20,6 +20,8 @@ import (
 func New(cfg config.Config, db *gorm.DB) *gin.Engine {
 	if !cfg.App.Debug {
 		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
 	}
 	if cfg.App.ConsoleColor {
 		gin.ForceConsoleColor()
