@@ -133,13 +133,13 @@ UPLOAD_BASE_PATH=uploads
 
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
-GITHUB_REDIRECT=https://www.example.com/api/home/auth/github/callback
+GITHUB_REDIRECT=https://www.example.com/api/auth/github/callback
 QQ_CLIENT_ID=
 QQ_CLIENT_SECRET=
-QQ_REDIRECT=https://www.example.com/api/home/auth/qq/callback
+QQ_REDIRECT=https://www.example.com/api/auth/qq/callback
 WEIBO_CLIENT_ID=
 WEIBO_CLIENT_SECRET=
-WEIBO_REDIRECT=https://www.example.com/api/home/auth/weibo/callback
+WEIBO_REDIRECT=https://www.example.com/api/auth/weibo/callback
 ```
 
 编译 Gin 服务：

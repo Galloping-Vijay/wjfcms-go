@@ -41,7 +41,7 @@
     var email=form.email.value.trim().toLowerCase();
     if(!email){msg.textContent='请先填写邮箱';return;}
     if(email===originEmail){msg.textContent='邮箱未变化，无需验证码';return;}
-    window.WJFCMGOAuth.post('/api/home/auth/email-code',{email:email,purpose:'profile_email'}).then(function(body){
+    window.WJFCMGOAuth.post('/api/auth/email-code',{email:email,purpose:'profile_email'}).then(function(body){
       msg.textContent=body.data&&body.data.debug_code?'开发验证码：'+body.data.debug_code:'验证码已发送，请查看邮箱';
       seconds=60;send.disabled=true;send.textContent='60s';timer=setInterval(tick,1000);
     }).catch(function(err){msg.textContent=err.message;});

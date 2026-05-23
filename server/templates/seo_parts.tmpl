@@ -64,7 +64,7 @@
       get:function(url){return this.request('GET',url);},
       post:function(url,data){return this.request('POST',url,data);},
       put:function(url,data){return this.request('PUT',url,data);},
-      loadCaptcha:function(form){return this.get('/api/home/auth/captcha').then(function(body){form.captcha_key.value=body.data.key;form.captcha_code.value='';var img=form.querySelector('[data-captcha-image]');if(img)img.src=body.data.image;});},
+      loadCaptcha:function(form){return this.get('/api/auth/captcha').then(function(body){form.captcha_key.value=body.data.key;form.captcha_code.value='';var img=form.querySelector('[data-captcha-image]');if(img)img.src=body.data.image;});},
       renderAuthState:function(){var boxes=document.querySelectorAll('[data-home-auth-state]'),user=this.user(),token=this.token();boxes.forEach(function(box){if(token&&user){var name=user.name||user.email||'用户',avatar=user.avatar||'/images/config/avatar.jpg';box.innerHTML='<a class="home-user-chip" href="/user"><img src="'+escapeAttr(avatar)+'" alt=""><span>'+escapeHTML(name)+'</span></a><button type="button" data-home-logout>退出</button>';}else{box.innerHTML='<a class="primary" href="/login">登录</a><a href="/register">注册</a>';}});}
     };
     function escapeHTML(value){return String(value||'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}

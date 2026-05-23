@@ -12,9 +12,9 @@
     <p class="form-message" id="form-message"></p>
   </form>
   <div class="oauth-links" aria-label="第三方注册登录">
-    <a href="/api/home/auth/github">GitHub 登录</a>
-    <a href="/api/home/auth/qq">QQ 登录</a>
-    <a href="/api/home/auth/weibo">微博登录</a>
+    <a href="/api/auth/github">GitHub 登录</a>
+    <a href="/api/auth/qq">QQ 登录</a>
+    <a href="/api/auth/weibo">微博登录</a>
   </div>
   <div class="auth-links"><a href="/login">已有账号，去登录</a></div>
 </section>
@@ -26,7 +26,7 @@
   send.addEventListener('click',function(){
     var email=form.email.value.trim();if(!email){msg.textContent='请先填写邮箱';return;}
     msg.textContent='';
-    window.WJFCMGOAuth.post('/api/home/auth/email-code',{email:email,purpose:'register'}).then(function(body){
+    window.WJFCMGOAuth.post('/api/auth/email-code',{email:email,purpose:'register'}).then(function(body){
       msg.textContent=body.data&&body.data.debug_code?'开发验证码：'+body.data.debug_code:'验证码已发送，请查看邮箱';
       seconds=60;send.disabled=true;send.textContent='60s';timer=setInterval(tick,1000);
     }).catch(function(err){msg.textContent=err.message;});
@@ -36,7 +36,7 @@
     var data=window.WJFCMGOAuth.formJSON(form);
     if(data.password!==data.password_confirm){msg.textContent='两次输入的密码不一致';return;}
     delete data.password_confirm;
-    window.WJFCMGOAuth.post('/api/home/auth/register',data).then(function(body){
+    window.WJFCMGOAuth.post('/api/auth/register',data).then(function(body){
       localStorage.setItem('home_token',body.data.token);
       localStorage.setItem('home_user',JSON.stringify(body.data.user));
       location.href='/user';

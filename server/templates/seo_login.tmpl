@@ -9,9 +9,9 @@
     <p class="form-message" id="form-message"></p>
   </form>
   <div class="oauth-links" aria-label="第三方登录">
-    <a href="/api/home/auth/github">GitHub 登录</a>
-    <a href="/api/home/auth/qq">QQ 登录</a>
-    <a href="/api/home/auth/weibo">微博登录</a>
+    <a href="/api/auth/github">GitHub 登录</a>
+    <a href="/api/auth/qq">QQ 登录</a>
+    <a href="/api/auth/weibo">微博登录</a>
   </div>
   <div class="auth-links"><a href="/register">注册账号</a><a href="/forgot-password">忘记密码</a></div>
 </section>
@@ -22,7 +22,7 @@
   window.WJFCMGOAuth.loadCaptcha(form);
   form.addEventListener('submit',function(e){
     e.preventDefault();msg.textContent='';
-    window.WJFCMGOAuth.post('/api/home/auth/login',window.WJFCMGOAuth.formJSON(form)).then(function(body){
+    window.WJFCMGOAuth.post('/api/auth/login',window.WJFCMGOAuth.formJSON(form)).then(function(body){
       localStorage.setItem('home_token',body.data.token);
       localStorage.setItem('home_user',JSON.stringify(body.data.user));
       location.href=redirect;
