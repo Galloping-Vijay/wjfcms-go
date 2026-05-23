@@ -62,12 +62,14 @@ REQUEST_LOG_TYPE=json
 REQUEST_LOG_PATH=storage/request-logs
 REQUEST_LOG_OUTPUT=file
 REQUEST_LOG_LEVEL=info
+REQUEST_LOG_ONLY_API=true
 REQUEST_LOG_MAX_BODY_KB=256
+REQUEST_LOG_MAX_RESPONSE_KB=64
 REQUEST_LOG_MAX_FILE_MB=20
 REQUEST_LOG_KEEP_DAYS=14
 ```
 
-开启后每次请求都会返回 `X-Request-ID` 响应头，JSON API 响应体也会带 `request_id`。请求参数、响应内容和该请求触发的 SQL 会写入 `REQUEST_LOG_PATH/YYYY-MM-DD/requests-YYYY-MM-DD.log`，超过 `REQUEST_LOG_MAX_FILE_MB` 后自动分割。需要查询某次请求时使用：
+开启后每次请求都会返回 `X-Request-ID` 响应头，JSON API 响应体也会带 `request_id`。默认只记录 `/api/` 接口请求，不记录前台 HTML 页面；日志不再记录 `headers` 和 `user_agent`。请求参数、接口返回结果和该请求触发的 SQL 会写入 `REQUEST_LOG_PATH/YYYY-MM-DD/requests-YYYY-MM-DD.log`，超过 `REQUEST_LOG_MAX_FILE_MB` 后自动分割。需要查询某次请求时使用：
 
 ```text
 GET /api/admin/request-logs/:request_id

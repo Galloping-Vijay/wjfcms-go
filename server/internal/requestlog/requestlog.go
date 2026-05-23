@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -36,21 +35,19 @@ type SQLRecord struct {
 }
 
 type Entry struct {
-	RequestID string         `json:"request_id"`
-	Level     string         `json:"level"`
-	Method    string         `json:"method"`
-	Path      string         `json:"path"`
-	RawQuery  string         `json:"raw_query,omitempty"`
-	ClientIP  string         `json:"client_ip"`
-	UserAgent string         `json:"user_agent"`
-	Headers   map[string]any `json:"headers,omitempty"`
-	Request   Payload        `json:"request"`
-	Response  Payload        `json:"response"`
-	SQL       []SQLRecord    `json:"sql"`
-	Status    int            `json:"status"`
-	Latency   float64        `json:"latency_ms"`
-	StartTime string         `json:"start_time"`
-	EndTime   string         `json:"end_time"`
+	RequestID string      `json:"request_id"`
+	Level     string      `json:"level"`
+	Method    string      `json:"method"`
+	Path      string      `json:"path"`
+	RawQuery  string      `json:"raw_query,omitempty"`
+	ClientIP  string      `json:"client_ip"`
+	Request   Payload     `json:"request"`
+	Response  Payload     `json:"response"`
+	SQL       []SQLRecord `json:"sql"`
+	Status    int         `json:"status"`
+	Latency   float64     `json:"latency_ms"`
+	StartTime string      `json:"start_time"`
+	EndTime   string      `json:"end_time"`
 }
 
 type Payload struct {
@@ -75,6 +72,10 @@ func NewStore(cfg config.LogConfig) *Store {
 	if maxBody <= 0 {
 		maxBody = 256 * 1024
 	}
+	maxResp := cfg.RequestMaxRespBytes
+	if maxResp <= 0 {
+		maxResp = 64 * 1024
+	}
 	return &Store{
 		cfg: config.LogConfig{
 			RequestEnabled:      cfg.RequestEnabled,
@@ -82,7 +83,9 @@ func NewStore(cfg config.LogConfig) *Store {
 			RequestPath:         firstNonEmpty(cfg.RequestPath, "storage/request-logs"),
 			RequestOutput:       firstNonEmpty(cfg.RequestOutput, "file"),
 			RequestLevel:        firstNonEmpty(cfg.RequestLevel, "info"),
+			RequestOnlyAPI:      cfg.RequestOnlyAPI,
 			RequestMaxBodyBytes: maxBody,
+			RequestMaxRespBytes: maxResp,
 			RequestMaxFileBytes: cfg.RequestMaxFileBytes,
 			RequestKeepDays:     cfg.RequestKeepDays,
 		},
@@ -113,14 +116,14 @@ func (s *Store) Middleware() gin.HandlerFunc {
 		c.Set("request_id", requestID)
 		c.Writer.Header().Set(HeaderName, requestID)
 
-		if !s.enabled {
+		if !s.enabled || !s.shouldLogPath(c.Request.URL.Path) {
 			c.Next()
 			return
 		}
 
 		start := time.Now()
 		requestPayload := s.captureRequest(c)
-		writer := &bodyWriter{ResponseWriter: c.Writer, max: s.cfg.RequestMaxBodyBytes}
+		writer := &bodyWriter{ResponseWriter: c.Writer, max: s.cfg.RequestMaxRespBytes}
 		c.Writer = writer
 
 		entry := &Entry{
@@ -129,10 +132,8 @@ func (s *Store) Middleware() gin.HandlerFunc {
 			Path:      c.Request.URL.Path,
 			RawQuery:  c.Request.URL.RawQuery,
 			ClientIP:  c.ClientIP(),
-			UserAgent: c.Request.UserAgent(),
 			Request:   requestPayload,
 			StartTime: start.Format(time.RFC3339Nano),
-			Headers:   safeHeaders(c.Request.Header),
 		}
 		gid := currentGID()
 		s.start(gid, entry)
@@ -172,6 +173,10 @@ func (s *Store) AddSQL(record SQLRecord) {
 	if entry := s.active[gid]; entry != nil {
 		entry.SQL = append(entry.SQL, record)
 	}
+}
+
+func (s *Store) shouldLogPath(path string) bool {
+	return !s.cfg.RequestOnlyAPI || strings.HasPrefix(path, "/api/")
 }
 
 func (s *Store) Find(requestID string) (Entry, string, error) {
@@ -421,19 +426,6 @@ func safeRequestID(value string) string {
 		return -1
 	}, value)
 	return value
-}
-
-func safeHeaders(headers http.Header) map[string]any {
-	result := map[string]any{}
-	for key, value := range headers {
-		lower := strings.ToLower(key)
-		if strings.Contains(lower, "authorization") || strings.Contains(lower, "cookie") || strings.Contains(lower, "token") {
-			result[key] = "[hidden]"
-			continue
-		}
-		result[key] = value
-	}
-	return result
 }
 
 func levelForStatus(status int) string {

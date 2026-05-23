@@ -193,7 +193,9 @@ REQUEST_LOG_ENABLED=false
 REQUEST_LOG_PATH=storage/request-logs
 REQUEST_LOG_OUTPUT=file
 REQUEST_LOG_LEVEL=info
+REQUEST_LOG_ONLY_API=true
 REQUEST_LOG_MAX_BODY_KB=256
+REQUEST_LOG_MAX_RESPONSE_KB=64
 REQUEST_LOG_MAX_FILE_MB=20
 
 DB_HOST=127.0.0.1
@@ -210,7 +212,7 @@ UPLOAD_BASE_PATH=uploads
 
 注意：当前 Gin 会从工作目录读取 `templates/*.tmpl`，所以 systemd 的 `WorkingDirectory` 必须指向 `server/`。
 
-如果开启 `REQUEST_LOG_ENABLED=true`，请求链路日志会写到 `REQUEST_LOG_PATH/YYYY-MM-DD/requests-YYYY-MM-DD.log`，并按 `REQUEST_LOG_MAX_FILE_MB` 自动分割。生产环境建议保证 `server/storage/` 可写，并定期清理或备份。
+如果开启 `REQUEST_LOG_ENABLED=true`，默认只记录 `/api/` 接口请求，日志会写到 `REQUEST_LOG_PATH/YYYY-MM-DD/requests-YYYY-MM-DD.log`，并按 `REQUEST_LOG_MAX_FILE_MB` 自动分割。生产环境建议保证 `server/storage/` 可写，并定期清理或备份。
 
 ## systemd 示例
 

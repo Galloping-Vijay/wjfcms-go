@@ -49,7 +49,9 @@ type LogConfig struct {
 	RequestPath         string
 	RequestOutput       string
 	RequestLevel        string
+	RequestOnlyAPI      bool
 	RequestMaxBodyBytes int
+	RequestMaxRespBytes int
 	RequestMaxFileBytes int64
 	RequestKeepDays     int
 }
@@ -201,7 +203,9 @@ func Load(files ...string) Config {
 			RequestPath:         env("REQUEST_LOG_PATH", "storage/request-logs"),
 			RequestOutput:       env("REQUEST_LOG_OUTPUT", "file"),
 			RequestLevel:        env("REQUEST_LOG_LEVEL", "info"),
+			RequestOnlyAPI:      envBool("REQUEST_LOG_ONLY_API", true),
 			RequestMaxBodyBytes: envInt("REQUEST_LOG_MAX_BODY_KB", 256) * 1024,
+			RequestMaxRespBytes: envInt("REQUEST_LOG_MAX_RESPONSE_KB", 64) * 1024,
 			RequestMaxFileBytes: int64(envInt("REQUEST_LOG_MAX_FILE_MB", 20)) * 1024 * 1024,
 			RequestKeepDays:     envInt("REQUEST_LOG_KEEP_DAYS", 14),
 		},
