@@ -272,16 +272,21 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /uploads/ {
+    location ^~ /uploads/ {
         alias /www/wwwroot/wjfcm-go/public/uploads/;
+        expires 30d;
+        access_log off;
     }
 
-    location /images/ {
+    location ^~ /images/ {
         alias /www/wwwroot/wjfcm-go/public/images/;
+        expires 30d;
+        access_log off;
     }
 
     location ~ ^/(favicon\.ico|ads\.txt|bdunion\.txt|google.*\.html)$ {
         root /www/wwwroot/wjfcm-go/public;
+        access_log off;
     }
 
     location /admin/ {

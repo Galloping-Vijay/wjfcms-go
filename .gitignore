@@ -7,6 +7,7 @@ server/.env.prod
 server/.env.bak.*
 server/.install.lock
 web/.env
+web/.env.production
 
 # Go
 server/tmp/
