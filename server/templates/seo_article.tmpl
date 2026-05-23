@@ -36,7 +36,11 @@
         <h2>留言评论</h2>
         <p>支持表情、回复和点赞。评论需要先登录。</p>
       </div>
-      <a class="comment-login" href="/login">登录</a>
+      <a class="comment-login" id="comment-login-link" href="/login">登录</a>
+      <div class="comment-user-state" id="comment-user-state" hidden>
+        <span></span>
+        <button type="button" id="comment-logout">退出</button>
+      </div>
     </div>
     <form class="comment-form" id="comment-form">
       <input type="hidden" name="pid" value="0">
@@ -73,13 +77,29 @@
   var cancelReply = document.getElementById('cancel-reply');
   var emojiToggle = document.getElementById('emoji-toggle');
   var emojiRow = document.getElementById('emoji-row');
+  var loginLink = document.getElementById('comment-login-link');
+  var userState = document.getElementById('comment-user-state');
+  var userStateText = userState ? userState.querySelector('span') : null;
+  var commentLogout = document.getElementById('comment-logout');
   var page = 1;
   var limit = 8;
   var total = 0;
   var comments = [];
 
   function token() {
-    return localStorage.getItem('home_token') || '';
+    return window.WJFCMGOAuth ? window.WJFCMGOAuth.token() : (localStorage.getItem('home_token') || '');
+  }
+
+  function currentUser() {
+    return window.WJFCMGOAuth ? window.WJFCMGOAuth.user() : null;
+  }
+
+  function refreshAuthUI() {
+    var user = currentUser();
+    var isLoggedIn = Boolean(token() && user);
+    if (loginLink) loginLink.hidden = isLoggedIn;
+    if (userState) userState.hidden = !isLoggedIn;
+    if (userStateText && isLoggedIn) userStateText.textContent = '已登录：' + (user.name || user.email || '用户');
   }
 
   function escapeHTML(value) {
@@ -221,10 +241,17 @@
   });
 
   cancelReply.addEventListener('click', clearReply);
+  if (commentLogout) {
+    commentLogout.addEventListener('click', function () {
+      if (window.WJFCMGOAuth) window.WJFCMGOAuth.clear();
+      refreshAuthUI();
+    });
+  }
   more.addEventListener('click', function () {
     page += 1;
     load(false);
   });
+  refreshAuthUI();
   load(true);
 })();
 </script>

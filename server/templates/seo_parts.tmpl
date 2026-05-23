@@ -37,6 +37,9 @@
     .auth-card{max-width:520px;margin:0 auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.auth-card h1{margin:0 0 18px;font-size:26px}.auth-form{display:grid;gap:14px}.auth-form label{display:grid;gap:7px;color:#4b5563;font-size:14px}.auth-form input,.auth-form textarea,.auth-form select{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 10px;background:#fff}.auth-form button{border:0;border-radius:8px;background:#111827;color:#fff;cursor:pointer;padding:10px 14px}.inline-code,.captcha-row{display:grid;grid-template-columns:minmax(0,1fr)128px;gap:10px}.captcha-button{overflow:hidden;border:1px solid #d1d5db!important;background:#f8fafc!important;color:#111827!important;padding:0!important}.captcha-button img{display:block;width:100%;height:42px;object-fit:cover}.oauth-links{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.oauth-links a{border:1px solid #d1d5db;border-radius:8px;color:#111827;font-weight:700;padding:9px 10px;text-align:center}.auth-links{display:flex;justify-content:center;gap:14px;margin-top:16px}.auth-links a{color:#0f766e;font-weight:700}.form-message{margin:0;color:#dc2626}.form-row-actions{display:flex;gap:10px}.form-row-actions .secondary{background:#6b7280}.profile-avatar{display:flex;align-items:center;gap:14px}.profile-avatar img{width:72px;height:72px;border-radius:50%;object-fit:cover}.profile-avatar label{display:inline-grid}.profile-avatar input{display:none}@media(max-width:640px){.auth-card{padding:18px}.inline-code,.captcha-row,.oauth-links{grid-template-columns:1fr}.form-row-actions{flex-direction:column}.profile-avatar{align-items:flex-start;flex-direction:column}.auth-links{flex-wrap:wrap}}
   </style>
   <style>
+    .home-auth-status{margin-left:auto;display:flex;align-items:center;gap:8px;white-space:nowrap}.home-auth-status a,.home-auth-status button{border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;cursor:pointer;font-size:14px;line-height:1;padding:7px 11px}.home-auth-status a.primary{border-color:#111827;background:#111827;color:#fff}.home-auth-status button:hover,.home-auth-status a:hover{border-color:#111827}.home-user-chip{display:flex;align-items:center;gap:7px;border:1px solid #d1d5db;border-radius:999px;background:#f8fafc;color:#374151;padding:5px 10px}.home-user-chip img{width:24px;height:24px;border-radius:50%;object-fit:cover}.comment-user-state{display:flex;align-items:center;gap:10px}.comment-user-state[hidden]{display:none}.comment-user-state span{color:#047857;font-size:14px;font-weight:700}.comment-user-state button{border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;cursor:pointer;padding:7px 10px}@media(max-width:820px){.home-auth-status{width:100%;margin-left:0;overflow-x:auto}.home-auth-status a,.home-auth-status button{flex:0 0 auto}}
+  </style>
+  <style>
     .side-media img,.side-ad img{width:100%;border-radius:8px;display:block}.side-media p,.side-history p,.side-link-form p{margin:8px 0 0;color:#6b7280;font-size:13px}.side-link-form form{display:grid;gap:9px}.side-link-form input{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px 10px}.side-link-form button{border:0;border-radius:8px;background:#111827;color:#fff;cursor:pointer;padding:9px 12px}.side-message{margin:0!important;color:#dc2626!important}.history-list{display:grid;gap:8px}.history-list li{border-top:1px solid #f1f5f9;padding-top:8px}.toolbar-mini{position:fixed;right:18px;top:34%;z-index:30;display:grid;gap:8px}.toolbar-mini button,.toolbar-mini a{display:grid;place-items:center;width:42px;height:42px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;box-shadow:0 10px 24px rgba(15,23,42,.12);cursor:pointer}.toolbar-pop{position:fixed;right:70px;top:34%;z-index:31;width:220px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;padding:14px;box-shadow:0 18px 42px rgba(15,23,42,.18)}.toolbar-pop img{width:100%;border-radius:8px}.toolbar-pop p{margin:8px 0 0;color:#4b5563}.toolbar-pop[hidden]{display:none}@media(max-width:820px){.toolbar-mini{right:12px;top:auto;bottom:18px;grid-template-columns:repeat(4,42px)}.toolbar-pop{right:12px;left:12px;top:auto;bottom:70px;width:auto}}
   </style>
   <style>
@@ -54,15 +57,22 @@
   <script>
     window.WJFCMGOAuth={
       token:function(){return localStorage.getItem('home_token')||'';},
+      user:function(){try{return JSON.parse(localStorage.getItem('home_user')||'null')||null;}catch(e){return null;}},
+      clear:function(){localStorage.removeItem('home_token');localStorage.removeItem('home_user');this.renderAuthState();},
       formJSON:function(form){var data={};new FormData(form).forEach(function(v,k){data[k]=String(v).trim();});return data;},
       request:function(method,url,data){var headers={'Content-Type':'application/json'};if(this.token())headers.Authorization='Bearer '+this.token();return fetch(url,{method:method,headers:headers,body:data?JSON.stringify(data):undefined}).then(function(res){return res.json().then(function(body){if(!res.ok||body.code!==0)throw new Error(body.msg||'请求失败');return body;});});},
       get:function(url){return this.request('GET',url);},
       post:function(url,data){return this.request('POST',url,data);},
       put:function(url,data){return this.request('PUT',url,data);},
-      loadCaptcha:function(form){return this.get('/api/home/auth/captcha').then(function(body){form.captcha_key.value=body.data.key;form.captcha_code.value='';var img=form.querySelector('[data-captcha-image]');if(img)img.src=body.data.image;});}
+      loadCaptcha:function(form){return this.get('/api/home/auth/captcha').then(function(body){form.captcha_key.value=body.data.key;form.captcha_code.value='';var img=form.querySelector('[data-captcha-image]');if(img)img.src=body.data.image;});},
+      renderAuthState:function(){var boxes=document.querySelectorAll('[data-home-auth-state]'),user=this.user(),token=this.token();boxes.forEach(function(box){if(token&&user){var name=user.name||user.email||'用户',avatar=user.avatar||'/images/config/avatar.jpg';box.innerHTML='<a class="home-user-chip" href="/user"><img src="'+escapeAttr(avatar)+'" alt=""><span>'+escapeHTML(name)+'</span></a><button type="button" data-home-logout>退出</button>';}else{box.innerHTML='<a class="primary" href="/login">登录</a><a href="/register">注册</a>';}});}
     };
+    function escapeHTML(value){return String(value||'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+    function escapeAttr(value){return escapeHTML(value).replace(/`/g,'&#96;');}
     window.WJFCMSAuth=window.WJFCMGOAuth;
     document.addEventListener('click',function(event){var btn=event.target.closest('[data-refresh-captcha]');if(btn){var form=btn.closest('form');if(form)window.WJFCMGOAuth.loadCaptcha(form);}});
+    document.addEventListener('click',function(event){if(event.target.closest('[data-home-logout]')){window.WJFCMGOAuth.clear();if(location.pathname==='/user')location.href='/';}});
+    document.addEventListener('DOMContentLoaded',function(){window.WJFCMGOAuth.renderAuthState();});
   </script>
 </head>
 <body>
@@ -74,6 +84,7 @@
       {{ $activeCategoryID := .ActiveCategoryID }}{{ range .Categories }}<a href="/category/{{ .ID }}" class="{{ if eq .ID $activeCategoryID }}active{{ end }}">{{ .Name }}</a>{{ end }}
       {{ $currentPath := .CurrentPath }}{{ range .Navs }}<a href="{{ .URL }}" target="{{ if .Target }}{{ .Target }}{{ else }}_self{{ end }}" class="{{ if eq .URL $currentPath }}active{{ end }}">{{ .Name }}</a>{{ end }}
     </nav>
+    <div class="home-auth-status" data-home-auth-state><a class="primary" href="/login">登录</a><a href="/register">注册</a></div>
   </div>
 </header>
 <main class="wrap">
