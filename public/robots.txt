@@ -23,7 +23,7 @@ Disallow: /blank
 Disallow: /api
 
 # Sitemap位置
-Sitemap: http://blog.localhost/sitemap.xml
+Sitemap: https://www.choudalao.com/sitemap.xml
 
 # 爬取延迟（可选，对遵守Crawl-delay的爬虫有效）
 Crawl-delay: 1
