@@ -37,6 +37,11 @@
             <option :value="true">是</option>
           </select>
         </label>
+        
+        <label>
+          点击数
+          <input v-model="form.click" type="number" />
+        </label>
       </div>
 
       <div class="tag-picker">
@@ -146,6 +151,7 @@ const form = reactive({
   keywords: '',
   cover: '',
   is_top: false,
+  click: 90,
   status: 0,
   is_baijiahao: false
 })
@@ -173,6 +179,7 @@ async function loadArticle() {
     keywords: res.data.keywords || '',
     cover: res.data.cover || '',
     is_top: Boolean(res.data.is_top),
+    click: res.data.click ?? 90,
     status: res.data.status || 0,
     is_baijiahao: Boolean(res.data.is_baijiahao)
   })

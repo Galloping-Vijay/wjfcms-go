@@ -34,6 +34,7 @@ type articleRequest struct {
 	Cover       string `json:"cover"`
 	IsTop       bool   `json:"is_top"`
 	Status      int8   `json:"status"`
+	Click       uint   `json:"click"`
 	IsBaijiahao bool   `json:"is_baijiahao"`
 }
 
@@ -223,6 +224,7 @@ func (h *ArticleHandler) Store(c *gin.Context) {
 		Cover:       req.Cover,
 		IsTop:       req.IsTop,
 		Status:      req.Status,
+		Click:       req.Click,
 		IsBaijiahao: req.IsBaijiahao,
 	}
 
@@ -257,6 +259,7 @@ func (h *ArticleHandler) Update(c *gin.Context) {
 		"cover":        req.Cover,
 		"is_top":       req.IsTop,
 		"status":       req.Status,
+		"click":        req.Click,
 		"is_baijiahao": req.IsBaijiahao,
 	}
 	if err := h.db.Model(&article).Updates(updates).Error; err != nil {
