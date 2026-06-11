@@ -96,7 +96,7 @@
 {{ define "seo_layout_end" -}}
   </div>
   <aside>
-    <section class="side"><h3>关于本站</h3><p>{{ config .Configs "site_description" .Description }}</p></section>
+    <section class="side"><h3>关于本站</h3><p>{{ if config .Configs "site_description" "" }}{{ config .Configs "site_description" "" }}{{ else }}{{ .SiteName }}{{ end }}</p></section>
     <section class="side"><h3>搜索</h3><form action="/search" method="get"><input name="q" placeholder="搜索文章" style="width:100%;height:38px;border:1px solid #d1d5db;border-radius:8px;padding:0 10px"></form></section>
     <section class="side"><h3>标签云</h3><div class="chips">{{ range .Tags }}<a href="/tag/{{ .ID }}">{{ .Name }}</a>{{ end }}</div></section>
     <section class="side side-media">
