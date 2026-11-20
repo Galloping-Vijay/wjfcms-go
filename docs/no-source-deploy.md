@@ -256,7 +256,7 @@ server {
     root /www/wwwroot/wjfcms-go/web/dist;
     index index.html;
 
-    location ~ ^/(api|article|category|tag|search|archive|chat|login|register|forgot-password|user|install|blank|robots\.txt|sitemap\.xml|tools|wechat|baidu)(/|$) {
+    location ~ ^/(api|apps|article|category|tag|search|archive|chat|login|register|forgot-password|user|install|blank|robots\.txt|sitemap\.xml|tools|wechat|baidu)(/|$) {
         proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
