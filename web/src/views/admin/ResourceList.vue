@@ -84,6 +84,21 @@
               :disabled="!canEdit || isDeleted(row) || inlineLoadingKey === inlineKey(row, column)"
               @change="updateInlineValue(row, column, $event)"
             />
+            <img
+              v-else-if="column.image"
+              :src="row[column.key] || '/images/config/default-img.jpg'"
+              class="table-thumb"
+              style="width:36px;height:36px;border-radius:6px;object-fit:cover;vertical-align:middle;"
+            />
+            <a
+              v-else-if="column.link"
+              :href="row[column.key]"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color:#2563eb;text-decoration:underline;"
+            >
+              {{ formatValue(row, column) }}
+            </a>
             <template v-else>{{ formatValue(row, column) }}</template>
           </td>
           <td v-if="hasActions" class="action-cell">
@@ -658,6 +673,40 @@ const configs = {
       { key: 'config_type', label: '配置类型', type: 'number', normalize: Number },
       { key: 'status', label: '状态', type: 'select', options: statusOptions, normalize: Number }
     ]
+  },
+  apps: {
+    title: '应用',
+    recyclable: true,
+    searchFields: [
+      { key: 'title', label: '应用名称' },
+      { key: 'author', label: '作者' },
+      { key: 'status', label: '状态', type: 'select', options: allStatusOptions },
+      { key: 'delete', label: '是否删除', type: 'select', options: deleteOptions }
+    ],
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'icon', label: '图标', image: true },
+      { key: 'title', label: '应用名称' },
+      { key: 'author', label: '作者' },
+      { key: 'url', label: '应用链接', link: true, max: 35 },
+      { key: 'description', label: '简介', max: 30 },
+      { key: 'sort', label: '排序', inlineEdit: 'number' },
+      { key: 'status', label: '状态', map: { 0: '禁用', 1: '启用' }, toggle: true },
+      { key: 'created_at', label: '创建时间' }
+    ],
+    fields: [
+      { key: 'title', label: '应用名称', required: true },
+      { key: 'icon', label: '图标', type: 'image' },
+      { key: 'author', label: '作者' },
+      { key: 'url', label: '应用链接', required: true, placeholder: 'https://example.com' },
+      { key: 'target', label: '打开方式', type: 'select', options: [
+        { label: '新窗口 (_blank)', value: '_blank' },
+        { label: '当前窗口 (_self)', value: '_self' }
+      ], default: '_blank' },
+      { key: 'description', label: '应用简介', type: 'textarea', rows: 3 },
+      { key: 'sort', label: '排序', type: 'number', normalize: Number, default: 0 },
+      { key: 'status', label: '状态', type: 'select', options: statusOptions, normalize: Number, default: 1 }
+    ]
   }
 }
 
@@ -785,6 +834,13 @@ const resourcePermissions = {
     delete: '/admin/weChat/keyword/destroy',
     restore: '/admin/weChat/keyword/update',
     forceDelete: '/admin/weChat/keyword/destroy'
+  },
+  apps: {
+    create: '/admin/apps/store',
+    edit: '/admin/apps/update',
+    delete: '/admin/apps/destroy',
+    restore: '/admin/apps/update',
+    forceDelete: '/admin/apps/destroy'
   },
   'system-configs': { edit: '/admin/systemConfig/update' }
 }
@@ -1049,6 +1105,7 @@ function buildPayload() {
 }
 
 function isImageValueField(field) {
+  if (field.type === 'image') return true
   if (resource.value !== 'system-configs' || field.key !== 'value') return false
   const key = String(form.key || '').toLowerCase()
   const type = String(form.type || '').toLowerCase()

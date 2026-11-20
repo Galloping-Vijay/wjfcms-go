@@ -11,6 +11,7 @@ import (
 	"wjfcms-go/internal/config"
 	"wjfcms-go/internal/handler"
 	"wjfcms-go/internal/middleware"
+	"wjfcms-go/internal/model"
 	"wjfcms-go/internal/requestlog"
 
 	"github.com/gin-contrib/cors"
@@ -94,6 +95,7 @@ func New(cfg config.Config, db *gorm.DB) *gin.Engine {
 	r.GET("/search", seoPages.Search)
 	r.GET("/archive", seoPages.Archive)
 	r.GET("/chat", seoPages.Chat)
+	r.GET("/apps", seoPages.Apps)
 	r.GET("/login", seoPages.Login)
 	r.GET("/register", seoPages.Register)
 	r.GET("/forgot-password", seoPages.ForgotPassword)
@@ -128,6 +130,7 @@ func New(cfg config.Config, db *gorm.DB) *gin.Engine {
 	home.GET("/friend-links", content.FriendLinks)
 	home.POST("/friend-links", content.ApplyFriendLink)
 	home.GET("/chats", content.Chats)
+	home.GET("/apps", content.Apps)
 	home.GET("/system-configs", content.SystemConfigs)
 	home.GET("/comments", comments.PublicIndex)
 
@@ -234,10 +237,41 @@ func New(cfg config.Config, db *gorm.DB) *gin.Engine {
 	admin.DELETE("/wx-keywords/:id", content.DeleteWxKeyword)
 	admin.POST("/wx-keywords/:id/restore", content.RestoreWxKeyword)
 	admin.DELETE("/wx-keywords/:id/force", content.ForceDeleteWxKeyword)
+	admin.GET("/apps", content.Apps)
+	admin.POST("/apps", content.StoreApp)
+	admin.PUT("/apps/:id", content.UpdateApp)
+	admin.DELETE("/apps/:id", content.DeleteApp)
+	admin.POST("/apps/:id/restore", content.RestoreApp)
+	admin.DELETE("/apps/:id/force", content.ForceDeleteApp)
+
+	if db != nil && handler.IsInstalled(db) {
+		_ = db.AutoMigrate(&model.App{})
+		ensureAppPermission(db)
+	}
 
 	r.NoRoute(servePublicRootFile(cfg.Upload.PublicDir))
 
 	return r
+}
+
+func ensureAppPermission(db *gorm.DB) {
+	var count int64
+	db.Model(&model.Permission{}).Where("url = ?", "/admin/apps").Count(&count)
+	if count == 0 {
+		perm := model.Permission{
+			Name:        "应用管理",
+			GuardName:   "admin",
+			URL:         "/admin/apps",
+			Level:       1,
+			ParentID:    10,
+			DisplayMenu: 1,
+			Icon:        "grid",
+		}
+		if err := db.Create(&perm).Error; err == nil && perm.ID > 0 {
+			link := model.RoleHasPermission{RoleID: 1, PermissionID: perm.ID}
+			_ = db.Where("role_id = ? AND permission_id = ?", link.RoleID, link.PermissionID).FirstOrCreate(&link).Error
+		}
+	}
 }
 
 func installGuard(db *gorm.DB) gin.HandlerFunc {

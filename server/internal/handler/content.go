@@ -669,3 +669,96 @@ func (h *ContentHandler) ForceDeleteWxKeyword(c *gin.Context) {
 	}
 	response.OK(c, "操作成功", nil)
 }
+
+func (h *ContentHandler) Apps(c *gin.Context) {
+	var items []model.App
+	query := h.db.Model(&model.App{})
+	if c.FullPath() == "/api/home/apps" {
+		query = query.Where("status = ?", 1)
+	}
+	if keyword := strings.TrimSpace(c.Query("keyword")); keyword != "" {
+		query = query.Where("title LIKE ? OR author LIKE ? OR description LIKE ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+	}
+	if title := strings.TrimSpace(c.Query("title")); title != "" {
+		query = query.Where("title LIKE ?", "%"+title+"%")
+	}
+	if author := strings.TrimSpace(c.Query("author")); author != "" {
+		query = query.Where("author LIKE ?", "%"+author+"%")
+	}
+	if status := c.Query("status"); status != "" {
+		query = query.Where("status = ?", status)
+	}
+	query = applyDeleteFilter(query, c.Query("delete"))
+	page, pageSize := pageParams(c)
+	var total int64
+	query.Count(&total)
+	if err := query.Order("sort DESC, id DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&items).Error; err != nil {
+		response.Error(c, http.StatusInternalServerError, 1, err.Error())
+		return
+	}
+	response.Page(c, "获取成功", items, total)
+}
+
+func (h *ContentHandler) StoreApp(c *gin.Context) {
+	var item model.App
+	if err := c.ShouldBindJSON(&item); err != nil {
+		response.Error(c, http.StatusBadRequest, 1, "请填写应用信息")
+		return
+	}
+	item.Title = strings.TrimSpace(item.Title)
+	item.URL = strings.TrimSpace(item.URL)
+	if item.Title == "" || item.URL == "" {
+		response.Error(c, http.StatusBadRequest, 1, "应用标题和链接不能为空")
+		return
+	}
+	if item.Target == "" {
+		item.Target = "_blank"
+	}
+	if err := h.db.Create(&item).Error; err != nil {
+		response.Error(c, http.StatusInternalServerError, 1, err.Error())
+		return
+	}
+	response.OK(c, "操作成功", item)
+}
+
+func (h *ContentHandler) UpdateApp(c *gin.Context) {
+	var item model.App
+	if err := h.db.First(&item, c.Param("id")).Error; err != nil {
+		response.Error(c, http.StatusNotFound, 1, "应用不存在")
+		return
+	}
+	if err := c.ShouldBindJSON(&item); err != nil {
+		response.Error(c, http.StatusBadRequest, 1, "请填写应用信息")
+		return
+	}
+	item.Title = strings.TrimSpace(item.Title)
+	item.URL = strings.TrimSpace(item.URL)
+	if item.Title == "" || item.URL == "" {
+		response.Error(c, http.StatusBadRequest, 1, "应用标题和链接不能为空")
+		return
+	}
+	if item.Target == "" {
+		item.Target = "_blank"
+	}
+	if err := h.db.Save(&item).Error; err != nil {
+		response.Error(c, http.StatusInternalServerError, 1, err.Error())
+		return
+	}
+	response.OK(c, "操作成功", item)
+}
+
+func (h *ContentHandler) DeleteApp(c *gin.Context) {
+	if err := h.db.Delete(&model.App{}, c.Param("id")).Error; err != nil {
+		response.Error(c, http.StatusInternalServerError, 1, err.Error())
+		return
+	}
+	response.OK(c, "操作成功", nil)
+}
+
+func (h *ContentHandler) RestoreApp(c *gin.Context) {
+	restoreByID(c, h.db, &model.App{})
+}
+
+func (h *ContentHandler) ForceDeleteApp(c *gin.Context) {
+	forceDeleteByID(c, h.db, &model.App{})
+}

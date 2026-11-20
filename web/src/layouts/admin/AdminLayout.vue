@@ -187,6 +187,7 @@ const pageTitle = computed(() => {
   if (route.name === 'admin.navs') return '导航管理'
   if (route.name === 'admin.friendLinks') return '友情链接'
   if (route.name === 'admin.chats') return '闲言碎语'
+  if (route.name === 'admin.apps') return '应用管理'
   if (route.name === 'admin.systemConfigs') return '系统配置'
   return '控制台'
 })
@@ -385,6 +386,10 @@ function mapLegacyAdminPath(url = '') {
     '/admin/chat/index': '/admin/chats',
     '/admin/nav/index': '/admin/navs',
     '/admin/friendLinks/index': '/admin/friend-links',
+    '/admin/apps': '/admin/apps',
+    '/admin/apps/index': '/admin/apps',
+    '/admin/app': '/admin/apps',
+    '/admin/app/index': '/admin/apps',
     '/admin/wechat': '',
     '/admin/weChat': '',
     '/admin/weChat/keyword/index': '/admin/wx-keywords',
@@ -401,6 +406,7 @@ function mapLegacyAdminPath(url = '') {
   if (normalized.includes('/comment')) return '/admin/comments'
   if (normalized.toLowerCase().includes('/wechat') && !normalized.includes('/weChat/keyword')) return ''
   if (normalized.includes('/chat')) return '/admin/chats'
+  if (normalized.includes('/apps') || normalized.includes('/app')) return '/admin/apps'
   if (normalized.includes('/nav')) return '/admin/navs'
   if (normalized.includes('/friendLinks')) return '/admin/friend-links'
   if (normalized.includes('/weChat/keyword')) return '/admin/wx-keywords'
@@ -436,6 +442,7 @@ function fallbackMenus() {
         { key: 'navs', name: '导航管理', path: '/admin/navs' },
         { key: 'friend-links', name: '友情链接', path: '/admin/friend-links' },
         { key: 'chats', name: '闲言碎语', path: '/admin/chats' },
+        { key: 'apps', name: '应用管理', path: '/admin/apps' },
         {
           key: 'wechat',
           name: '微信配置',

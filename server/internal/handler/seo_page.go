@@ -56,6 +56,7 @@ type seoPageData struct {
 	TopArticles      []seoArticleItem
 	Archive          []seoArchiveGroup
 	Chats            []model.Chat
+	Apps             []model.App
 	Article          *model.Article
 	ArticleTags      []model.Tag
 	PrevArticle      *model.Article
@@ -276,6 +277,33 @@ func (h *SEOPageHandler) Chat(c *gin.Context) {
 	data.Pages = buildPageLinks("/chat", page, total)
 	data.JSONLD = template.JS(h.collectionJSONLD(data, "有些话", "/chat"))
 	c.HTML(http.StatusOK, "seo_chat.tmpl", data)
+}
+
+func (h *SEOPageHandler) Apps(c *gin.Context) {
+	var apps []model.App
+	page := positivePage(c.Query("page"))
+	const appPageSize = 12
+	query := h.db.Model(&model.App{}).Where("status = ?", 1)
+	var total int64
+	query.Count(&total)
+	if err := query.Order("sort DESC, id DESC").Offset((page - 1) * appPageSize).Limit(appPageSize).Find(&apps).Error; err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	data := h.baseData(c)
+	data.Title = "我的应用 | " + h.configValue(data.Configs, "seo_title", data.SiteName)
+	data.Description = "精选与独立开发的应用作品集"
+	data.Keywords = "我的应用,应用展示,作品集," + h.configValue(data.Configs, "site_seo_keywords", "")
+	data.Canonical = absoluteRequestURL(c, "/apps")
+	data.Apps = apps
+	data.Page = page
+	data.HasPrev = page > 1
+	data.HasNext = page*appPageSize < int(total)
+	data.PrevURL = pageURL("/apps", page-1)
+	data.NextURL = pageURL("/apps", page+1)
+	data.Pages = buildPageLinks("/apps", page, total)
+	data.JSONLD = template.JS(h.collectionJSONLD(data, "我的应用", "/apps"))
+	c.HTML(http.StatusOK, "seo_apps.tmpl", data)
 }
 
 func (h *SEOPageHandler) Login(c *gin.Context) {

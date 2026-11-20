@@ -1,0 +1,212 @@
+{{ template "seo_layout_start" . }}
+<style>
+  .app-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 12px;
+    padding: 32px 28px;
+    margin-bottom: 24px;
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  }
+  .app-hero h1 {
+    margin: 0 0 10px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .app-hero p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 15px;
+  }
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 20px;
+  }
+  .app-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    position: relative;
+    overflow: hidden;
+  }
+  .app-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1);
+    border-color: #cbd5e1;
+  }
+  .app-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .app-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #f1f5f9;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0;
+  }
+  .app-icon-placeholder {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+  }
+  .app-title-group {
+    min-width: 0;
+    flex: 1;
+  }
+  .app-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .app-author {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #0f766e;
+    background: #f0fdfa;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid #ccfbf1;
+    font-weight: 600;
+  }
+  .app-desc {
+    margin: 0 0 18px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 4.8em;
+  }
+  .app-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: auto;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 14px;
+  }
+  .app-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .app-btn:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+  .app-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  @media (max-width: 640px) {
+    .app-grid {
+      grid-template-columns: 1fr;
+    }
+    .app-hero {
+      padding: 24px 18px;
+    }
+  }
+</style>
+
+<section class="app-hero">
+  <h1>我的应用</h1>
+  <p>探索并体验我独立开发与维护的各类应用与工具项目。</p>
+</section>
+
+<section class="app-grid">
+  {{ range .Apps }}
+    <article class="app-card">
+      <div>
+        <div class="app-header">
+          {{ if .Icon }}
+            <img class="app-icon" src="{{ .Icon }}" alt="{{ .Title }}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="app-icon-placeholder" style="display:none;">
+              <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+          {{ else }}
+            <div class="app-icon-placeholder">
+              <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+          {{ end }}
+          <div class="app-title-group">
+            <h2 class="app-title" title="{{ .Title }}">{{ .Title }}</h2>
+            {{ if .Author }}
+              <span class="app-author">{{ .Author }}</span>
+            {{ end }}
+          </div>
+        </div>
+        <p class="app-desc" title="{{ .Description }}">
+          {{ if .Description }}{{ .Description }}{{ else }}暂无详细介绍{{ end }}
+        </p>
+      </div>
+      <div class="app-actions">
+        <a class="app-btn" href="{{ .URL }}" target="{{ if .Target }}{{ .Target }}{{ else }}_blank{{ end }}" rel="noopener noreferrer">
+          <span>访问应用</span>
+          <svg viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z" clip-rule="evenodd"></path>
+          </svg>
+        </a>
+      </div>
+    </article>
+  {{ else }}
+    <div class="empty" style="grid-column: 1 / -1;">暂无发布的应用</div>
+  {{ end }}
+</section>
+
+{{ if or .HasPrev .HasNext }}
+  <nav class="pager">
+    {{ if .HasPrev }}<a href="{{ .PrevURL }}">上一页</a>{{ end }}
+    {{ range .Pages }}{{ if .Active }}<span class="active">{{ .Number }}</span>{{ else }}<a href="{{ .URL }}">{{ .Number }}</a>{{ end }}{{ end }}
+    {{ if .HasNext }}<a href="{{ .NextURL }}">下一页</a>{{ end }}
+  </nav>
+{{ end }}
+
+{{ template "seo_layout_end" . }}

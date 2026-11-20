@@ -34,6 +34,7 @@ const routes = [
       { path: 'friend-links', name: 'admin.friendLinks', component: AdminResourceList, meta: { resource: 'friend-links' } },
       { path: 'chats', name: 'admin.chats', component: AdminResourceList, meta: { resource: 'chats' } },
       { path: 'wx-keywords', name: 'admin.wxKeywords', component: AdminResourceList, meta: { resource: 'wx-keywords' } },
+      { path: 'apps', name: 'admin.apps', component: AdminResourceList, meta: { resource: 'apps' } },
       { path: 'system-configs', name: 'admin.systemConfigs', component: AdminResourceList, meta: { resource: 'system-configs' } }
     ]
   }

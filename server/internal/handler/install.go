@@ -267,6 +267,7 @@ func migrateInstallTables(db *gorm.DB) error {
 		&model.Nav{},
 		&model.Chat{},
 		&model.WxKeyword{},
+		&model.App{},
 	)
 }
 
@@ -333,6 +334,7 @@ func seedInstallPermissions(tx *gorm.DB) error {
 		{BaseModel: model.BaseModel{ID: 17}, Name: "友情链接", GuardName: "admin", URL: "/admin/friendLinks/index", Level: 1, ParentID: 10, DisplayMenu: 1, Icon: "link"},
 		{BaseModel: model.BaseModel{ID: 18}, Name: "微信配置", GuardName: "admin", URL: "/admin/wechat", Level: 1, ParentID: 10, DisplayMenu: 1, Icon: "message-square"},
 		{BaseModel: model.BaseModel{ID: 19}, Name: "关键词回复", GuardName: "admin", URL: "/admin/weChat/keyword/index", Level: 2, ParentID: 18, DisplayMenu: 1},
+		{BaseModel: model.BaseModel{ID: 20}, Name: "应用管理", GuardName: "admin", URL: "/admin/apps", Level: 1, ParentID: 10, DisplayMenu: 1, Icon: "grid"},
 	}
 	for _, item := range items {
 		permission := item
@@ -388,6 +390,7 @@ func seedInstallContent(tx *gorm.DB) error {
 		{BaseModel: model.BaseModel{ID: 1}, Name: "首页", URL: "/", Sort: 0, Target: "_self"},
 		{BaseModel: model.BaseModel{ID: 2}, Name: "文章归档", URL: "/archive", Sort: 10, Target: "_self"},
 		{BaseModel: model.BaseModel{ID: 3}, Name: "有些话", URL: "/chat", Sort: 20, Target: "_self"},
+		{BaseModel: model.BaseModel{ID: 4}, Name: "我的应用", URL: "/apps", Sort: 25, Target: "_self"},
 	}
 	for _, item := range navs {
 		nav := item
